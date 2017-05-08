@@ -9,7 +9,6 @@
 import SpriteKit
 
 open class Node: SKShapeNode {
-    
     lazy var mask: SKCropNode = { [unowned self] in
         let node = SKCropNode()
         node.maskNode = {
@@ -31,14 +30,6 @@ open class Node: SKShapeNode {
         return node
     }()
     
-    public lazy var label: SKLabelNode = { [unowned self] in
-        let label = SKLabelNode(fontNamed: "Avenir-Black")
-        label.fontSize = 12
-        label.verticalAlignmentMode = .center
-        self.mask.addChild(label)
-        return label
-    }()
-    
     public lazy var sprite: SKSpriteNode = { [unowned self] in
         let sprite = SKSpriteNode()
         sprite.size = self.frame.size
@@ -48,22 +39,40 @@ open class Node: SKShapeNode {
     }()
     
     /**
-     The text displayed by the node.
+     The images displayed by the node.
      */
-    open var text: String? {
-        get { return label.text }
-        set { label.text = newValue }
+    open var defaultImage: UIImage? {
+        didSet {
+            guard let image = defaultImage else { return }
+            
+            defaultTexture = SKTexture(image: image)
+            
+            if sprite.texture == nil {
+                if let texture = defaultTexture {
+                    sprite.run(.setTexture(texture))
+                }
+            }
+        }
+    }
+    
+    open var selectedImage: UIImage? {
+        didSet {
+            guard let image = selectedImage else { return }
+            
+            selectedTexture = SKTexture(image: image)
+        }
     }
     
     /**
-     The image displayed by the node.
+     The textures displayed by the node.
      */
-    open var image: UIImage? {
-        didSet {
-            guard let image = image else { return }
-            texture = SKTexture(image: image)
-        }
-    }
+    private var defaultTexture: SKTexture?
+    private var selectedTexture: SKTexture?
+    
+    /**
+     Selection scale
+     */
+    private var selectionScale: CGFloat = 4/3
     
     /**
      The color of the node.
@@ -74,8 +83,6 @@ open class Node: SKShapeNode {
         get { return sprite.color }
         set { sprite.color = newValue }
     }
-    
-    private(set) var texture: SKTexture!
     
     /**
      The selection state of the node.
@@ -102,9 +109,11 @@ open class Node: SKShapeNode {
      
      - Returns: A new node.
      */
-    public convenience init(text: String?, image: UIImage?, color: UIColor, radius: CGFloat) {
+    public convenience init(radius: CGFloat, selectionScale scale: CGFloat) {
         self.init()
         self.init(circleOfRadius: radius)
+        
+        selectionScale = scale
         
         self.physicsBody = {
             let body = SKPhysicsBody(circleOfRadius: radius + 2)
@@ -113,17 +122,8 @@ open class Node: SKShapeNode {
             body.linearDamping = 3
             return body
         }()
-        self.fillColor = .white
-        self.strokeColor = .white
+        
         _ = self.sprite
-        _ = self.text
-        configure(text: text, image: image, color: color)
-    }
-    
-    open func configure(text: String?, image: UIImage?, color: UIColor) {
-        self.text = text
-        self.image = image
-        self.color = color
     }
     
     override open func removeFromParent() {
@@ -137,7 +137,10 @@ open class Node: SKShapeNode {
      */
     open func selectedAnimation() {
         run(.scale(to: 4/3, duration: 0.2))
-        sprite.run(.setTexture(texture))
+        
+        if let texture = selectedTexture {
+            sprite.run(.setTexture(texture))
+        }
     }
     
     /**
@@ -145,7 +148,10 @@ open class Node: SKShapeNode {
      */
     open func deselectedAnimation() {
         run(.scale(to: 1, duration: 0.2))
-        sprite.texture = nil
+        
+        if let texture = defaultTexture {
+            sprite.run(.setTexture(texture))
+        }
     }
     
     /**
@@ -158,5 +164,4 @@ open class Node: SKShapeNode {
     open func removedAnimation(completion: @escaping () -> Void) {
         run(.fadeOut(withDuration: 0.2), completion: completion)
     }
-    
 }
