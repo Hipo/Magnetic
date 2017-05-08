@@ -33,7 +33,7 @@ open class Node: SKShapeNode {
     public lazy var sprite: SKSpriteNode = { [unowned self] in
         let sprite = SKSpriteNode()
         sprite.size = self.frame.size
-        sprite.colorBlendFactor = 1.0
+        sprite.colorBlendFactor = 0.1
         self.mask.addChild(sprite)
         return sprite
     }()
