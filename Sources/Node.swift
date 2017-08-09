@@ -11,29 +11,46 @@ import SpriteKit
 open class Node: SKShapeNode {
     lazy var mask: SKCropNode = { [unowned self] in
         let node = SKCropNode()
+
+        node.zPosition = 10.0
+
         node.maskNode = {
             let node = SKShapeNode(circleOfRadius: self.frame.width / 2)
+
+            node.zPosition = 20.0
             node.fillColor = .white
             node.strokeColor = .clear
+
             return node
         }()
+
         self.addChild(node)
+
         _ = self.maskOverlay // Masking creates aliasing. This masks the aliasing.
+
         return node
     }()
     
     lazy var maskOverlay: SKShapeNode = { [unowned self] in
         let node = SKShapeNode(circleOfRadius: self.frame.width / 2)
+
+        node.zPosition = 30.0
         node.fillColor = .clear
         node.strokeColor = self.strokeColor
+        
         self.addChild(node)
+
         return node
     }()
     
     public lazy var sprite: SKSpriteNode = { [unowned self] in
         let sprite = SKSpriteNode()
+
+        sprite.zPosition = 40.0
         sprite.size = self.frame.size
+
         self.mask.addChild(sprite)
+
         return sprite
     }()
     
