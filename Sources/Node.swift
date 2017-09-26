@@ -126,7 +126,6 @@ open class Node: SKShapeNode {
      - Returns: A new node.
      */
     public convenience init(radius: CGFloat, selectionScale scale: CGFloat) {
-        self.init()
         self.init(circleOfRadius: radius)
         
         selectionScale = scale
